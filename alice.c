@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
     OQS_STATUS rc = OQS_KEM_encaps(kem, ciphertext, K1A, bob_kyber_public_key);
     if (rc != OQS_SUCCESS) {
         printf("error on key encapsulation\n");
+        exit(1);
     }
 
     uint8_t *signature = malloc(OQS_SIG_dilithium_2_length_signature);
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
         (size_t)OQS_KEM_kyber_512_length_ciphertext, alice_dilithium_private_key);
     if (rc != OQS_SUCCESS) {
         printf("error on signature\n");
+        exit(1);
     }
 
     Write_Hex_File("kyber_ciphertext.txt", ciphertext, OQS_KEM_kyber_512_length_ciphertext);
