@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     
     //Read dilithium signature
     size_t dil_sig_len;
-    uint8_t *dilithium_signature = Read_Hex_File("Dilithium_signature.txt", &dil_sig_len);
+    uint8_t *dilithium_signature = Read_Hex_File("dilithium_signature.txt", &dil_sig_len);
 
     //read Kyber Cipher [CT_A]
     size_t CT_A_len;

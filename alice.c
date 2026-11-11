@@ -16,33 +16,44 @@ void Write_Hex_File(const char *filename, const uint8_t *data, size_t len);
 void XOR_Bytes(uint8_t *output, const uint8_t *b1, const uint8_t *b2, size_t len);
 int Compute_SHA256(const uint8_t *data, size_t data_len, uint8_t *hash_output);
 
-#define OQS_SIG_alg_dilithium_2
-#define OQS_KEM_alg_kyber_512 "Kyber512"
+#define OQS_KEM_kyber_512_length_public_key 800
+#define OQS_KEM_kyber_512_length_secret_key 1632
+#define OQS_KEM_kyber_512_length_ciphertext 768
+#define OQS_KEM_kyber_512_length_shared_secret 32
+#define OQS_KEM_kyber_512_length_keypair_seed 0
+
+#define OQS_SIG_dilithium_2_length_public_key 1312
+#define OQS_SIG_dilithium_2_length_secret_key 2528
+#define OQS_SIG_dilithium_2_length_signature 2420
 
 int main(int argc, char *argv[]) { 
-    int bob_kyber_public_key_length;
-    unsigned char *bob_kyber_public_key_hex = Read_Hex_File(argv[1], &bob_kyber_public_key_length);
-    uint8_t *bob_kyber_public_key_bytes; // need to malloc
-    Convert_from_Hex(bob_kyber_public_key_bytes, bob_kyber_public_key_hex, bob_kyber_public_key_length);
+    size_t bob_kyber_public_key_length;
+    unsigned char *bob_kyber_public_key = Read_Hex_File(argv[1], &bob_kyber_public_key_length);
 
-    int alice_dilithium_private_key_length;
-    unsigned char *alice_dilithium_private_key_hex = Read_Hex_File(argv[2], &alice_dilithium_private_key_length);
-    uint8_t *alice_dilithium_private_key_bytes; // need to malloc
-    Convert_from_Hex(alice_dilithium_private_key_bytes, alice_dilithium_private_key_hex, alice_dilithium_private_key_length);
+    size_t alice_dilithium_private_key_length;
+    unsigned char *alice_dilithium_private_key = Read_Hex_File(argv[2], &alice_dilithium_private_key_length);
 
-    OQS_KEM *kem = OQS_KEM_new("Kyber512");
-    OQS_STATUS rc = OQS_KEM_keypair(kem, public_key, secret_key);
-    if (rc != OQS_SUCCESS) {
-        printf("error on key pair\n");
-    }
+    OQS_SIG *sig = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
 
-    uint8_t *ciphertext;
-    uint8_t *K1A;
-
-    rc = OQS_KEM_encaps(kem, ciphertext, K1A, bob_kyber_public_key_bytes);
+    uint8_t *ciphertext = malloc(OQS_KEM_kyber_512_length_ciphertext);
+    uint8_t *K1A = malloc(OQS_KEM_kyber_512_length_shared_secret);
+    OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_512);
+    OQS_STATUS rc = OQS_KEM_encaps(kem, ciphertext, K1A, bob_kyber_public_key);
     if (rc != OQS_SUCCESS) {
         printf("error on key encapsulation\n");
     }
+
+    uint8_t *signature = malloc(OQS_SIG_dilithium_2_length_signature);
+    size_t signature_length;
+    rc = OQS_SIG_sign(sig, signature, &signature_length, ciphertext, 
+        (size_t)OQS_KEM_kyber_512_length_ciphertext, alice_dilithium_private_key);
+    if (rc != OQS_SUCCESS) {
+        printf("error on signature\n");
+    }
+
+    Write_Hex_File("kyber_ciphertext.txt", ciphertext, OQS_KEM_kyber_512_length_ciphertext);
+    Write_Hex_File("dilithium_signature.txt", signature, signature_length);
+    Write_Hex_File("alice_shared_secret.txt", K1A, OQS_KEM_kyber_512_length_shared_secret);
 }
 
 char* Read_File(const char *filename, long *fileLen) {
