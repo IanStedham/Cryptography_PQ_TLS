@@ -1,6 +1,6 @@
 
-gcc alice.c -lssl -lcrypto -loqs -o alice
-gcc bob.c -lssl -lcrypto -loqs -o bob
+gcc alicexor.c -lssl -lcrypto -loqs -o alicexor
+gcc bobxor.c -lssl -lcrypto -loqs -o bobxor
 
 ./bob bob_dilithium_private.txt alice_kyber_public.txt k1_ab.txt >> Bob1.log
 ./alice bob_dilithium_public.txt alice_kyber_private.txt bob_dilithium_signature.txt bob_kyber_ciphertext.txt k1_ab.txt >> Alice1.log
