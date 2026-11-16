@@ -33,6 +33,12 @@ int main(int argc, char *argv[]) {
     size_t alice_dilithium_private_key_length;
     unsigned char *alice_dilithium_private_key = Read_Hex_File(argv[2], &alice_dilithium_private_key_length);
 
+    if (bob_kyber_public_key_length != OQS_KEM_kyber_512_length_public_key    // 800
+        || alice_dilithium_private_key_length != OQS_SIG_dilithium_2_length_secret_key) { // 2528
+            fprintf(stderr, "Error: input size mismatch\n");
+            exit(1);
+        }
+
     OQS_SIG *sig = OQS_SIG_new(OQS_SIG_alg_dilithium_2);
 
     uint8_t *ciphertext = malloc(OQS_KEM_kyber_512_length_ciphertext);

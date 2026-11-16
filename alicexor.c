@@ -28,20 +28,29 @@ int Compute_SHA256(const uint8_t *data, size_t data_len, uint8_t *hash_output);
 
 int main(int argc, char *argv[]) { 
     size_t bob_dilithium_public_key_length;
-    unsigned char *bob_dilithium_public_key = Read_Hex_File(argv[1], &bob_dilithium_public_key_length);
+    unsigned char *bob_dilithium_public_key = Read_Hex_File(argv[2], &bob_dilithium_public_key_length);
 
     size_t alice_kyber_private_key_length;
-    unsigned char *alice_kyber_private_key = Read_Hex_File(argv[2], &alice_kyber_private_key_length);
+    unsigned char *alice_kyber_private_key = Read_Hex_File(argv[3], &alice_kyber_private_key_length);
 
     size_t bob_dilithium_signature_length;
-    unsigned char *bob_dilithium_signature = Read_Hex_File(argv[3], &bob_dilithium_signature_length);
+    unsigned char *bob_dilithium_signature = Read_Hex_File(argv[4], &bob_dilithium_signature_length);
 
     size_t bob_kyber_ciphertext_length;
-    unsigned char *bob_kyber_ciphertext = Read_Hex_File(argv[4], &bob_kyber_ciphertext_length);
+    unsigned char *bob_kyber_ciphertext = Read_Hex_File(argv[5], &bob_kyber_ciphertext_length);
 
     size_t k1_ab_length;
-    unsigned char *k1_ab = Read_Hex_File(argv[5], &k1_ab_length);
+    unsigned char *k1_ab = Read_Hex_File(argv[1], &k1_ab_length);
 
+    //Verify lengths
+    if (k1_ab_length                    != OQS_KEM_kyber_512_length_shared_secret   // 32
+    || bob_dilithium_public_key_length != OQS_SIG_dilithium_2_length_public_key    // 1312
+    || alice_kyber_private_key_length  != OQS_KEM_kyber_512_length_secret_key      // 1632
+    || bob_dilithium_signature_length  != OQS_SIG_dilithium_2_length_signature     // 2420
+    || bob_kyber_ciphertext_length     != OQS_KEM_kyber_512_length_ciphertext) {   // 768
+        fprintf(stderr, "Error: input size mismatch\n");
+        exit(1);
+    }
     OQS_SIG *sig = OQS_SIG_new(OQS_SIG_alg_dilithium_2);    
     OQS_STATUS rc = OQS_SIG_verify(sig, bob_kyber_ciphertext, bob_kyber_ciphertext_length, 
         bob_dilithium_signature, OQS_SIG_dilithium_2_length_signature, bob_dilithium_public_key);
@@ -61,11 +70,11 @@ int main(int argc, char *argv[]) {
     uint8_t *final_key = malloc(OQS_KEM_kyber_512_length_shared_secret);
     XOR_Bytes(final_key, k1_ab, K2_A, OQS_KEM_kyber_512_length_shared_secret);
 
-    uint8_t *final_key_hash = malloc(256);
+    uint8_t *final_key_hash = malloc(SHA256_DIGEST_LENGTH);
     Compute_SHA256(final_key, OQS_KEM_kyber_512_length_shared_secret, final_key_hash);
 
     Write_Hex_File("k2_alice.txt", K2_A, OQS_KEM_kyber_512_length_shared_secret);
-    Write_Hex_File("alice_final_key.txt", final_key_hash, 256);
+    Write_Hex_File("alice_final_key.txt", final_key_hash, SHA256_DIGEST_LENGTH);
 }
 
 char* Read_File(const char *filename, long *fileLen) {
