@@ -28,16 +28,16 @@ int main (int argc, char *argv[]) {
 
     //read dilithium sk
     size_t bob_sk_len;
-    uint8_t *bob_sk = Read_Hex_File("dilithium_signature.txt", &bob_sk_len);
+    uint8_t *bob_sk = Read_Hex_File(argv[3], &bob_sk_len);
 
-    //verify key lengths
-    if (alice_pk_len != OQS_SIG_dilithium_2_length_public_key 
-        || bob_sk_len != OQS_KEM_kyber_512_length_secret_key
-    ) {
-        printf("Error: Size mismatch\n");
+    // verify key lengths
+    if (K1_len       != OQS_KEM_kyber_512_length_shared_secret   // 32
+    || alice_pk_len != OQS_KEM_kyber_512_length_public_key      // 800
+    || bob_sk_len   != OQS_SIG_dilithium_2_length_secret_key) { // 2528
+        fprintf(stderr, "Error: input size mismatch\n");
         exit(1);
     }
-
+   
     //Perform key encapsulation using alices pk
     OQS_KEM *kem = OQS_KEM_new(OQS_KEM_alg_kyber_512);
     uint8_t CT_B[OQS_KEM_kyber_512_length_ciphertext];     
