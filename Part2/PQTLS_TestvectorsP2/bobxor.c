@@ -16,6 +16,15 @@ void Write_Hex_File(const char *filename, const uint8_t *data, size_t len);
 void XOR_Bytes(uint8_t *output, const uint8_t *b1, const uint8_t *b2, size_t len);
 int Compute_SHA256(const uint8_t *data, size_t data_len, uint8_t *hash_output);
 
+#define OQS_KEM_kyber_512_length_public_key 800
+#define OQS_KEM_kyber_512_length_secret_key 1632
+#define OQS_KEM_kyber_512_length_ciphertext 768
+#define OQS_KEM_kyber_512_length_shared_secret 32
+#define OQS_KEM_kyber_512_length_keypair_seed 0
+
+#define OQS_SIG_dilithium_2_length_public_key 1312
+#define OQS_SIG_dilithium_2_length_secret_key 2528
+#define OQS_SIG_dilithium_2_length_signature 2420
 
 int main (int argc, char *argv[]) {
     //read K1
